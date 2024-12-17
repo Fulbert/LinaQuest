@@ -24,7 +24,7 @@ const { videoElement, canvasElement, filterElement } = useCamera()
   position: absolute;
   top: 0;
   left: 0;
-  background: #fe5757;
+  background: rgb(250 150 150 / 0);
   mix-blend-mode: overlay;
 }
 

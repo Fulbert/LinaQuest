@@ -76,7 +76,7 @@ export const useCamera = () => {
     addLandmarks()
     updateMood()
 
-    canvasElement.value.style.filter = `saturate(4) hue-rotate(${mood.value}deg)`
+    canvasElement.value.style.filter = `hue-rotate(${mood.value}deg)`
 
     videoElement.value.requestVideoFrameCallback((now, metadata) => frameCallback(now, metadata))
   }
