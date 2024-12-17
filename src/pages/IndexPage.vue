@@ -2,7 +2,7 @@
   <q-page>
     <video ref="videoElement" style="display: none" />
     <div class="landscape" />
-    <div class="filter" />
+    <div class="filter" ref="filterElement" />
     <canvas ref="canvasElement" class="" />
   </q-page>
 </template>
@@ -10,7 +10,7 @@
 <script setup lang="ts">
 import { useCamera } from 'src/components/useCamera'
 
-const { videoElement, canvasElement } = useCamera()
+const { videoElement, canvasElement, filterElement } = useCamera()
 </script>
 <style lang="scss">
 .canvas {
@@ -24,9 +24,7 @@ const { videoElement, canvasElement } = useCamera()
   position: absolute;
   top: 0;
   left: 0;
-  background: #fe5757;
-  animation: colorChange 30s ease-in-out infinite;
-  animation-fill-mode: both;
+  background: rgb(250 150 150 / 0);
   mix-blend-mode: overlay;
 }
 
