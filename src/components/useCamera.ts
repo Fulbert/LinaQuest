@@ -12,9 +12,7 @@ export const useCamera = () => {
    * HTML elements (video, canvas)
    */
   const videoElement = ref<HTMLVideoElement>()
-  const canvasRawElement = ref<HTMLCanvasElement>()
   const canvasElement = ref<HTMLCanvasElement>()
-  const ctxRaw = computed(() => getContext(canvasRawElement.value))
   const ctx = computed(() => getContext(canvasElement.value))
 
   /**
@@ -26,7 +24,7 @@ export const useCamera = () => {
    * Face detection and mood calculation
    */
   const detections = ref()
-  const mood = ref(0)
+  //const mood = ref(0)
 
   onMounted(() => {
     loadModel()
@@ -49,12 +47,7 @@ export const useCamera = () => {
   }
 
   const handleStream = (_stream: MediaStream) => {
-    if (
-      videoElement.value === undefined ||
-      canvasRawElement.value === undefined ||
-      canvasElement.value === undefined
-    )
-      return
+    if (videoElement.value === undefined || canvasElement.value === undefined) return
 
     videoElement.value.requestVideoFrameCallback((now, metadata) => frameCallback(now, metadata))
 
@@ -64,30 +57,21 @@ export const useCamera = () => {
 
   const frameCallback = (now: number, metadata: VideoFrameCallbackMetadata) => {
     if (
-      ctxRaw.value === undefined ||
+      ctx.value === undefined ||
       videoElement.value === undefined ||
-      canvasRawElement.value === undefined ||
-      canvasRawElement.value === null
+      canvasElement.value === undefined ||
+      canvasElement.value === null
     )
       return
 
     size.value = [metadata.width, metadata.height]
     resizeCanvas(size.value)
-    ctxRaw.value.drawImage(videoElement.value, 0, 0)
-
-    handleImage()
-
-    videoElement.value.requestVideoFrameCallback((now, metadata) => frameCallback(now, metadata))
-  }
-
-  const handleImage = async () => {
-    if (ctx.value === undefined || ctxRaw.value === undefined || canvasElement.value === undefined)
-      return
-
     detectFaces()
     addLandmarks()
 
-    canvasElement.value.style.filter = `sepia(1) saturate(4) hue-rotate(${mood.value}deg)`
+    //canvasElement.value.style.filter = `sepia(1) saturate(4) hue-rotate(${mood.value}deg)`
+
+    videoElement.value.requestVideoFrameCallback((now, metadata) => frameCallback(now, metadata))
   }
 
   const previousLandmarkDrawn = ref(true)
@@ -124,12 +108,10 @@ export const useCamera = () => {
   }
 
   const resizeCanvas = (size: [number, number]) => {
-    if (canvasElement.value === undefined || canvasRawElement.value === undefined) return
+    if (canvasElement.value === undefined) return
 
     canvasElement.value.width = size[0]
     canvasElement.value.height = size[1]
-    canvasRawElement.value.width = size[0]
-    canvasRawElement.value.height = size[1]
   }
 
   const getContext = (_canvas: HTMLCanvasElement | undefined) => {
@@ -139,5 +121,5 @@ export const useCamera = () => {
     return ctx
   }
 
-  return { videoElement, canvasRawElement, canvasElement, detections }
+  return { videoElement, canvasElement, detections }
 }
