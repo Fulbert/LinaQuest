@@ -13,6 +13,7 @@ export const useCamera = () => {
    */
   const videoElement = ref<HTMLVideoElement>()
   const canvasElement = ref<HTMLCanvasElement>()
+  const filterElement = ref<HTMLCanvasElement>()
   const ctx = computed(() => getContext(canvasElement.value))
 
   /**
@@ -23,8 +24,13 @@ export const useCamera = () => {
   /**
    * Face detection and mood calculation
    */
-  const detections = ref()
-  //const mood = ref(0)
+  const detections =
+    ref<
+      faceapi.WithFaceExpressions<
+        faceapi.WithFaceLandmarks<{ detection: faceapi.FaceDetection }, faceapi.FaceLandmarks68>
+      >
+    >()
+  const mood = ref(180)
 
   onMounted(() => {
     loadModel()
@@ -35,14 +41,14 @@ export const useCamera = () => {
   const loadModel = async () => {
     await faceapi.loadSsdMobilenetv1Model(MODEL_URL)
     await faceapi.loadFaceExpressionModel(MODEL_URL)
-    await faceapi.loadFaceLandmarkModel(MODEL_URL)
+    await faceapi.loadFaceLandmarkTinyModel(MODEL_URL)
 
     modelLoaded.value = true
   }
 
   const loadCamera = () => {
     navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
+      .getUserMedia({ video: true, audio: false })
       .then((stream) => handleStream(stream))
   }
 
@@ -68,8 +74,9 @@ export const useCamera = () => {
     resizeCanvas(size.value)
     detectFaces()
     addLandmarks()
+    updateMood()
 
-    //canvasElement.value.style.filter = `sepia(1) saturate(4) hue-rotate(${mood.value}deg)`
+    canvasElement.value.style.filter = `saturate(4) hue-rotate(${mood.value}deg)`
 
     videoElement.value.requestVideoFrameCallback((now, metadata) => frameCallback(now, metadata))
   }
@@ -103,8 +110,37 @@ export const useCamera = () => {
 
     detections.value = await faceapi
       .detectSingleFace(videoElement.value)
-      .withFaceLandmarks()
+      .withFaceLandmarks(true)
       .withFaceExpressions()
+  }
+
+  const updateMood = () => {
+    if (detections.value === undefined) return
+
+    const expression = detections.value.expressions.asSortedArray()[0]
+
+    if (expression === undefined) return
+
+    switch (expression.expression) {
+      case 'happy':
+        mood.value = mood.value < 180 ? (mood.value += 10) : 180
+        break
+      case 'neutral':
+        mood.value = mood.value > 0 ? (mood.value -= 5) : 0
+        break
+      case 'sad':
+        mood.value = 0
+        break
+      case 'angry':
+        mood.value = 0
+        break
+      default:
+        console.log(expression.expression)
+    }
+
+    if (filterElement.value === undefined) return
+
+    filterElement.value.style.background = `rgb(250 150 150 / ${mood.value / 180})`
   }
 
   const resizeCanvas = (size: [number, number]) => {
@@ -121,5 +157,5 @@ export const useCamera = () => {
     return ctx
   }
 
-  return { videoElement, canvasElement, detections }
+  return { videoElement, canvasElement, detections, filterElement }
 }
