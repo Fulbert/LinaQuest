@@ -5,7 +5,7 @@ export const useCamera = () => {
   /**
    * Face recognition model loading
    */
-  const MODEL_URL = '/models' // path to public/models
+  const MODEL_URL = './models' // path to public/models
   const modelLoaded = ref(false)
 
   /**
